@@ -11,11 +11,10 @@ Termux:X11 is a fully fledged X server. It is built with Android NDK and optimiz
 ## Added feature
 extend-display
 
-## how to use it?
-just start Xfce or something and activate virtual-1 first
+## how to use Extend Display?
+start An DE and activate virtual-1 first
 
 
-example:
 ```
 xrandr --output Virtual-1 --mode 1280x720 --right-of builtin
 ```
