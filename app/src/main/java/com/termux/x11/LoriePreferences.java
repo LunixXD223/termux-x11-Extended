@@ -28,8 +28,10 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.ListPreference;
+import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
+import androidx.preference.SwitchPreferenceCompat;
 
 import android.os.Handler;
 import android.os.IBinder;
@@ -269,6 +271,15 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             forEachPreference(screen, p -> {
                 p.setOnPreferenceChangeListener(this);
                 p.setPreferenceDataStore(prefs);
+                p.setSelectable(true);
+                if (p instanceof SwitchPreferenceCompat) {
+                    p.setLayoutResource(R.layout.preference);
+                    p.setWidgetLayoutResource(R.layout.preference_widget_switch_material);
+                } else if (p instanceof ListPreference || p instanceof EditTextPreference
+                        || "enableAccessibilityService".contentEquals(p.getKey())
+                        || "requestNotificationPermission".contentEquals(p.getKey())) {
+                    p.setLayoutResource(R.layout.preference_selectable);
+                }
 
                 int titleId = p.getKey() == null ? 0 : findId(p.getKey());
                 if (titleId != 0)

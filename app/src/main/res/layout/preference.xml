@@ -12,7 +12,8 @@
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
     android:background="@drawable/preference_card_ripple"
-    android:clipToPadding="false">
+    android:clipToPadding="false"
+    android:descendantFocusability="afterDescendants">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -43,5 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="end|center_vertical"
-        android:orientation="vertical" />
+        android:orientation="vertical"
+        android:clickable="false"
+        android:focusable="false" />
 </LinearLayout>
