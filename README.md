@@ -8,14 +8,12 @@ A [Termux](https://termux.com) X11 server add-on app.
 ## About
 Termux:X11 is a fully fledged X server. It is built with Android NDK and optimized to be used with Termux.
 
-## Added feature
-extend-display
+## Added a feature by me
+Extend Display
 
-## how to use it?
-just start Xfce or something and activate virtual-1 first
+## how to use Extend Display
+Start An DE and activate virtual-1 first
 
-
-example:
 ```
 xrandr --output Virtual-1 --mode 1280x720 --right-of builtin
 ```
