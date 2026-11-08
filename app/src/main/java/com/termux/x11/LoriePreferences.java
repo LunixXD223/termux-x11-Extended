@@ -270,11 +270,13 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 p.setOnPreferenceChangeListener(this);
                 p.setPreferenceDataStore(prefs);
 
-                if (p.getKey() != null && (id = findId(p.getKey())) != 0)
-                    p.setTitle(getResources().getString(id));
+                int titleId = p.getKey() == null ? 0 : findId(p.getKey());
+                if (titleId != 0)
+                    p.setTitle(getResources().getString(titleId));
 
-                if (p.getKey() != null && (id = findId(p.getKey() + "_summary")) != 0)
-                    p.setSummary(getResources().getString(id));
+                int summaryId = p.getKey() == null ? 0 : findId(p.getKey() + "_summary");
+                if (summaryId != 0)
+                    p.setSummary(getResources().getString(summaryId));
 
                 if (p instanceof ListPreference) {
                     ListPreference list = (ListPreference) p;
