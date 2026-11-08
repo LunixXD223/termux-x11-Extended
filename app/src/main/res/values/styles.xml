@@ -34,8 +34,6 @@
     <style name="Widget.TermuxX11.ActionButton" parent="Widget.Material3.Button.TonalButton">
         <item name="android:minHeight">48dp</item>
         <item name="android:minWidth">0dp</item>
-        <item name="insetTop">0dp</item>
-        <item name="insetBottom">0dp</item>
         <item name="cornerRadius">24dp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textStyle">bold</item>
@@ -43,8 +41,6 @@
     <style name="Widget.TermuxX11.CopyButton" parent="Widget.Material3.Button.TextButton">
         <item name="android:minHeight">48dp</item>
         <item name="android:minWidth">48dp</item>
-        <item name="insetTop">0dp</item>
-        <item name="insetBottom">0dp</item>
         <item name="android:textAllCaps">false</item>
     </style>
     <style name="ShapeAppearance.TermuxX11.GameCard" parent="ShapeAppearance.Material3.LargeComponent">
