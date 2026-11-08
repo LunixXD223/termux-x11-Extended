@@ -15,6 +15,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
+import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -52,6 +53,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -173,10 +175,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_activity);
 
         frm = findViewById(R.id.frame);
-        findViewById(R.id.preferences_button).setOnClickListener((l) -> startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }}));
-        findViewById(R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
-        findViewById(R.id.monitor_button).setOnClickListener((l) -> startActivity(new Intent(this, MonitorActivity.class)));
-        findViewById(R.id.exit_button).setOnClickListener((l) -> finish());
+        inflateDisconnectedHome();
+        bindDisconnectedHomeActions();
 
         LorieView lorieView = findViewById(R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
@@ -613,6 +613,8 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
+        ((DinoGameView) findViewById(R.id.dino_game)).onHostResume();
+
         mNotification = buildNotification();
         mNotificationManager.notify(mNotificationId, mNotification);
 
@@ -622,6 +624,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onPause() {
+        ((DinoGameView) findViewById(R.id.dino_game)).onHostPause();
         inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
 
         for (StatusBarNotification notification: mNotificationManager.getActiveNotifications())
@@ -633,6 +636,37 @@ public class MainActivity extends AppCompatActivity {
 
     public LorieView getLorieView() {
         return findViewById(R.id.lorieView);
+    }
+
+    private void inflateDisconnectedHome() {
+        FrameLayout stub = findViewById(R.id.stub);
+        stub.removeAllViews();
+        getLayoutInflater().inflate(R.layout.unconnected_stub, stub, true);
+        ((DinoGameView) findViewById(R.id.dino_game)).setGameAvailable(!LorieView.connected());
+    }
+
+    private void bindDisconnectedHomeActions() {
+        findViewById(R.id.preferences_button).setOnClickListener((l) -> startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }}));
+        findViewById(R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
+        findViewById(R.id.monitor_button).setOnClickListener((l) -> startActivity(new Intent(this, MonitorActivity.class)));
+        findViewById(R.id.exit_button).setOnClickListener((l) -> finish());
+        findViewById(R.id.copy_command_button).setOnClickListener((l) -> {
+            ClipboardManager clipboard = getSystemService(ClipboardManager.class);
+            clipboard.setPrimaryClip(ClipData.newPlainText("Termux:X11 command", getString(R.string.x11_command)));
+            Toast.makeText(this, R.string.command_copied, Toast.LENGTH_SHORT).show();
+        });
+        findViewById(R.id.open_termux_button).setOnClickListener((l) -> openTermux());
+    }
+
+    private void openTermux() {
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.termux");
+        if (launchIntent == null)
+            launchIntent = new Intent(Intent.ACTION_MAIN).setPackage("com.termux").addCategory(Intent.CATEGORY_LAUNCHER);
+        try {
+            startActivity(launchIntent);
+        } catch (Exception ignored) {
+            Toast.makeText(this, R.string.termux_not_found, Toast.LENGTH_SHORT).show();
+        }
     }
 
     public ViewPager getTerminalToolbarViewPager() {
@@ -719,6 +753,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+
+        // Reinflate only the disconnected panel; the live X11 surface remains untouched.
+        inflateDisconnectedHome();
+        bindDisconnectedHomeActions();
+        findViewById(R.id.stub).setVisibility(LorieView.connected() ? View.INVISIBLE : View.VISIBLE);
 
         if (newConfig.orientation != orientation)
             inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
@@ -858,6 +897,7 @@ public class MainActivity extends AppCompatActivity {
             setTerminalToolbarView();
             findViewById(R.id.mouse_buttons).setVisibility(prefs.showMouseHelper.get() && "1".equals(prefs.touchMode.get()) && connected ? View.VISIBLE : View.GONE);
             findViewById(R.id.stub).setVisibility(connected?View.INVISIBLE:View.VISIBLE);
+            ((DinoGameView) findViewById(R.id.dino_game)).setGameAvailable(!connected);
             getLorieView().setVisibility(connected?View.VISIBLE:View.INVISIBLE);
 
             // We should recover connection in the case if file descriptor for some reason was broken...

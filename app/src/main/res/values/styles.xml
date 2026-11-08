@@ -31,6 +31,25 @@
         <item name="android:windowTranslucentNavigation">false</item>
         <item name="materialButtonStyle">@style/Widget.Material3.Button</item>
     </style>
+    <style name="Widget.TermuxX11.ActionButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="insetTop">0dp</item>
+        <item name="insetBottom">0dp</item>
+        <item name="cornerRadius">24dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="Widget.TermuxX11.CopyButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="insetTop">0dp</item>
+        <item name="insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+    <style name="ShapeAppearance.TermuxX11.GameCard" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">28dp</item>
+    </style>
     <style name="Preference.Category.Material">
         <item name="android:layout">@layout/preference_category_material</item>
         <item name="allowDividerAbove">true</item>

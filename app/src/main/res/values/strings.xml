@@ -6,7 +6,16 @@
 <resources>
     <string name="app_name">&TERMUX_X11_APP_NAME;</string>
 
-    <string name="not_connected">Not connected</string>
+    <string name="not_connected">Belum terhubung</string>
+    <string name="settings_content_description">Pengaturan</string>
+    <string name="x11_command">termux-x11 :0</string>
+    <string name="copy">Salin</string>
+    <string name="open_termux">Buka Termux</string>
+    <string name="extend_display">Extend display</string>
+    <string name="help">Help</string>
+    <string name="exit">Exit</string>
+    <string name="command_copied">Perintah disalin</string>
+    <string name="termux_not_found">Aplikasi Termux tidak ditemukan</string>
     <string name="preferences_button_text">Preferences</string>
     <string name="help_button_text">Help</string>
     <string name="exit_button_text">Exit</string>
