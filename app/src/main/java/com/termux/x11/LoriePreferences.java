@@ -498,6 +498,24 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         @Override
         public void onDisplayPreferenceDialog(@NonNull Preference preference) {
+            if (!isAdded())
+                return;
+
+            if (preference instanceof ListPreference) {
+                ListPreference list = (ListPreference) preference;
+                CharSequence[] entries = list.getEntries();
+                int selected = list.findIndexOfValue(list.getValue());
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(list.getTitle())
+                        .setSingleChoiceItems(entries, selected, (dialog, which) -> {
+                            list.setValueIndex(which);
+                            dialog.dismiss();
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                return;
+            }
+
             if ("extra_keys_config".contentEquals(preference.getKey())) {
                 @SuppressLint("InflateParams")
                 View view = getLayoutInflater().inflate(R.layout.extra_keys_config, null, false);
@@ -522,7 +540,29 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                         .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
                         .create()
                         .show();
-            } else super.onDisplayPreferenceDialog(preference);
+                return;
+            }
+
+            if (preference instanceof EditTextPreference) {
+                EditTextPreference editPreference = (EditTextPreference) preference;
+                EditText input = new EditText(requireContext());
+                input.setSingleLine(true);
+                input.setText(editPreference.getText());
+                input.setSelection(input.length());
+                int horizontalPadding = (int) (24 * getResources().getDisplayMetrics().density);
+                input.setPadding(horizontalPadding, 0, horizontalPadding, 0);
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(editPreference.getTitle())
+                        .setView(input)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) ->
+                                editPreference.setText(input.getText().toString()))
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                return;
+            }
+
+            super.onDisplayPreferenceDialog(preference);
         }
     }
 
