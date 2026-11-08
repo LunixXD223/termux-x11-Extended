@@ -29,6 +29,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
 
 import android.os.Handler;
 import android.os.IBinder;
@@ -265,15 +266,14 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             PreferenceScreen screen = getPreferenceScreen();
             if ((id = findId(screen.getKey())) != 0)
                 getPreferenceScreen().setTitle(getResources().getString(id));
-            for (int i=0; i<getPreferenceScreen().getPreferenceCount(); i++) {
-                Preference p = screen.getPreference(i);
+            forEachPreference(screen, p -> {
                 p.setOnPreferenceChangeListener(this);
                 p.setPreferenceDataStore(prefs);
 
-                if ((id = findId(p.getKey())) != 0)
+                if (p.getKey() != null && (id = findId(p.getKey())) != 0)
                     p.setTitle(getResources().getString(id));
 
-                if ((id = findId(p.getKey() + "_summary")) != 0)
+                if (p.getKey() != null && (id = findId(p.getKey() + "_summary")) != 0)
                     p.setSummary(getResources().getString(id));
 
                 if (p instanceof ListPreference) {
@@ -282,9 +282,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                     list.setEntryValues(prefs.keys.get(p.getKey()).asList().getValues());
                     list.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
                 }
-            }
+            });
 
-            with("showAdditionalKbd", p -> p.setLayoutResource(R.layout.preference));
             with("version", p -> p.setSummary(BuildConfig.VERSION_NAME));
 
             setSummary("displayStretch", R.string.lorie_pref_summary_requiresExactOrCustom);
@@ -310,6 +309,16 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             setNoActionOptionText(findPreference("volumeDownAction"), "android volume control");
             setNoActionOptionText(findPreference("volumeUpAction"), "android volume control");
             setNoActionOptionText(findPreference("mediaKeysAction"), "android media control");
+        }
+
+        private void forEachPreference(PreferenceGroup group, Consumer<Preference> action) {
+            for (int i = 0; i < group.getPreferenceCount(); i++) {
+                Preference preference = group.getPreference(i);
+                if (preference instanceof PreferenceGroup)
+                    forEachPreference((PreferenceGroup) preference, action);
+                else
+                    action.accept(preference);
+            }
         }
 
         private void setSummary(CharSequence key, int disabled) {
@@ -724,10 +733,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     }
 
     static Handler handler = Looper.getMainLooper() != null ? new Handler(Looper.getMainLooper()) : null;
-
-    public void onClick(View view) {
-        showFragment(new LoriePreferenceFragment("ekbar"));
-    }
 
     /** @noinspection unused*/
     @SuppressLint("ApplySharedPref")

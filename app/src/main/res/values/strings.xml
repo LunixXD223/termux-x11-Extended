@@ -57,6 +57,7 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="lorie_pref_version">Version</string>
     <string name="lorie_pref_ekbar">Extra key bar preferences</string>
     <string name="lorie_pref_userActions">Response to user actions</string>
+    <string name="lorie_pref_about">About</string>
 
     <string name="lorie_pref_displayResolutionMode">Display resolution mode</string>
     <string name="lorie_pref_displayScale">Display scale, %</string>
