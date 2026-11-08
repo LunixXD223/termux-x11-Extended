@@ -27,6 +27,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
@@ -459,31 +460,70 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         @Override
         public void onDisplayPreferenceDialog(@NonNull Preference preference) {
+            if (!isAdded())
+                return;
+
+            if (preference instanceof ListPreference) {
+                ListPreference list = (ListPreference) preference;
+                CharSequence[] entries = list.getEntries();
+                if (entries == null || entries.length == 0)
+                    return;
+
+                int selected = Math.max(0, list.findIndexOfValue(list.getValue()));
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(list.getTitle())
+                        .setSingleChoiceItems(entries, selected, (dialog, which) -> {
+                            if (which >= 0 && which < entries.length)
+                                list.setValueIndex(which);
+                            dialog.dismiss();
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                return;
+            }
+
             if ("extra_keys_config".contentEquals(preference.getKey())) {
                 @SuppressLint("InflateParams")
                 View view = getLayoutInflater().inflate(R.layout.extra_keys_config, null, false);
                 EditText config = view.findViewById(R.id.extra_keys_config);
+                TextView desc = view.findViewById(R.id.extra_keys_config_description);
+                if (config == null || desc == null)
+                    return;
                 config.setTypeface(Typeface.MONOSPACE);
                 config.setText(prefs.extra_keys_config.get());
-                TextView desc = view.findViewById(R.id.extra_keys_config_description);
                 desc.setLinksClickable(true);
-                desc.setText(R.string.extra_keys_config_desc);
                 desc.setMovementMethod(LinkMovementMethod.getInstance());
-                new android.app.AlertDialog.Builder(getActivity())
+                new AlertDialog.Builder(requireContext())
                         .setView(view)
                         .setTitle("Extra keys config")
-                        .setPositiveButton("OK",
-                                (dialog, whichButton) -> {
-                                    String text = config.getText().toString();
-                                    prefs.extra_keys_config.put(!text.isEmpty() ? text : TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS);
-                                }
-                        )
+                        .setPositiveButton("OK", (dialog, whichButton) -> {
+                            String text = config.getText().toString();
+                            prefs.extra_keys_config.put(!text.isEmpty()
+                                    ? text : TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS);
+                        })
                         .setNeutralButton("Reset",
                                 (dialog, whichButton) -> prefs.extra_keys_config.put(TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS))
-                        .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
-                        .create()
+                        .setNegativeButton(android.R.string.cancel, null)
                         .show();
-            } else super.onDisplayPreferenceDialog(preference);
+                return;
+            }
+
+            if (preference instanceof EditTextPreference) {
+                EditTextPreference editPreference = (EditTextPreference) preference;
+                EditText input = new EditText(requireContext());
+                input.setSingleLine(true);
+                input.setText(editPreference.getText() == null ? "" : editPreference.getText());
+                input.setSelection(input.length());
+                int horizontalPadding = (int) (24 * getResources().getDisplayMetrics().density);
+                input.setPadding(horizontalPadding, 0, horizontalPadding, 0);
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(editPreference.getTitle())
+                        .setView(input)
+                        .setPositiveButton(android.R.string.ok,
+                                (dialog, whichButton) -> editPreference.setText(input.getText().toString()))
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+            }
         }
     }
 
