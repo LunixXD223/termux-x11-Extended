@@ -42,7 +42,6 @@ import android.preference.PreferenceManager;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceDataStore;
 import androidx.preference.PreferenceFragmentCompat;
@@ -67,6 +66,7 @@ import android.widget.Toast;
 import com.termux.x11.utils.KeyInterceptor;
 import com.termux.x11.utils.SamsungDexUtils;
 import com.termux.x11.utils.TermuxX11ExtraKeys;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -475,7 +475,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 if (!((Boolean) newValue))
                     KeyInterceptor.shutdown(false);
                 if (requireContext().checkSelfPermission(WRITE_SECURE_SETTINGS) != PERMISSION_GRANTED) {
-                    new AlertDialog.Builder(requireContext())
+                    new MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Permission denied")
                             .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
                                     "Please, launch this command using ADB:\n" +
@@ -504,11 +504,14 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             if (preference instanceof ListPreference) {
                 ListPreference list = (ListPreference) preference;
                 CharSequence[] entries = list.getEntries();
-                int selected = list.findIndexOfValue(list.getValue());
-                new AlertDialog.Builder(requireContext())
+                if (entries == null || entries.length == 0)
+                    return;
+                int selected = Math.max(0, list.findIndexOfValue(list.getValue()));
+                new MaterialAlertDialogBuilder(requireContext())
                         .setTitle(list.getTitle())
                         .setSingleChoiceItems(entries, selected, (dialog, which) -> {
-                            list.setValueIndex(which);
+                            if (which >= 0 && which < entries.length)
+                                list.setValueIndex(which);
                             dialog.dismiss();
                         })
                         .setNegativeButton(android.R.string.cancel, null)
@@ -520,25 +523,24 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 @SuppressLint("InflateParams")
                 View view = getLayoutInflater().inflate(R.layout.extra_keys_config, null, false);
                 EditText config = view.findViewById(R.id.extra_keys_config);
+                TextView desc = view.findViewById(R.id.extra_keys_config_description);
+                if (config == null || desc == null)
+                    return;
                 config.setTypeface(Typeface.MONOSPACE);
                 config.setText(prefs.extra_keys_config.get());
-                TextView desc = view.findViewById(R.id.extra_keys_config_description);
                 desc.setLinksClickable(true);
-                desc.setText(R.string.extra_keys_config_desc);
                 desc.setMovementMethod(LinkMovementMethod.getInstance());
-                new android.app.AlertDialog.Builder(getActivity())
+                new MaterialAlertDialogBuilder(requireContext())
                         .setView(view)
                         .setTitle("Extra keys config")
-                        .setPositiveButton("OK",
-                                (dialog, whichButton) -> {
-                                    String text = config.getText().toString();
-                                    prefs.extra_keys_config.put(!text.isEmpty() ? text : TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS);
-                                }
-                        )
-                        .setNeutralButton("Reset",
-                                (dialog, whichButton) -> prefs.extra_keys_config.put(TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS))
-                        .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
-                        .create()
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            String text = config.getText().toString();
+                            prefs.extra_keys_config.put(!text.isEmpty()
+                                    ? text : TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS);
+                        })
+                        .setNeutralButton("Reset", (dialog, which) ->
+                                prefs.extra_keys_config.put(TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS))
+                        .setNegativeButton(android.R.string.cancel, null)
                         .show();
                 return;
             }
@@ -547,22 +549,18 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 EditTextPreference editPreference = (EditTextPreference) preference;
                 EditText input = new EditText(requireContext());
                 input.setSingleLine(true);
-                input.setText(editPreference.getText());
+                input.setText(editPreference.getText() == null ? "" : editPreference.getText());
                 input.setSelection(input.length());
                 int horizontalPadding = (int) (24 * getResources().getDisplayMetrics().density);
                 input.setPadding(horizontalPadding, 0, horizontalPadding, 0);
-
-                new AlertDialog.Builder(requireContext())
+                new MaterialAlertDialogBuilder(requireContext())
                         .setTitle(editPreference.getTitle())
                         .setView(input)
                         .setPositiveButton(android.R.string.ok, (dialog, which) ->
                                 editPreference.setText(input.getText().toString()))
                         .setNegativeButton(android.R.string.cancel, null)
                         .show();
-                return;
             }
-
-            super.onDisplayPreferenceDialog(preference);
         }
     }
 
